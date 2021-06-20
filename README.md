@@ -1,4 +1,4 @@
-##To run the app follow instruction below:
+## To run the app follow instruction below:
 - Create a database locally 
 - Download composer https://getcomposer.org/download/
 - Pull Laravel/php project from git provider.
