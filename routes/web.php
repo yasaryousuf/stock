@@ -1,6 +1,9 @@
 <?php
 
+use App\Http\Controllers\CustomAuth\RegisterController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CustomAuth\LoginController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\SupplyController;
 use Illuminate\Support\Facades\Route;
@@ -17,8 +20,8 @@ Route::get('/', function () {
 });
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('dashboard', [AuthController::class, 'dashboard']);
-    Route::get('/', [AuthController::class, 'dashboard']);
+    Route::get('dashboard', [HomeController::class, 'dashboard']);
+    Route::get('/', [HomeController::class, 'dashboard']);
 
     Route::resource('suppliers', SupplierController::class);
     Route::resource('customers', CustomerController::class);
@@ -28,8 +31,9 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('categories', CategoryController::class);
 });
 
-Route::get('login', [AuthController::class, 'index'])->name('login');;
-Route::post('login', [AuthController::class, 'postLogin']);
-Route::get('registration', [AuthController::class, 'registration']);
-Route::post('registration', [AuthController::class, 'postRegistration']);
-Route::get('logout', [AuthController::class, 'logout']);
+Route::get('login', [LoginController::class, 'showLoginPage'])->name('login');
+Route::post('login', [LoginController::class, 'login']);
+Route::post('logout', [LoginController::class, 'logout'])->name('logout');
+
+Route::get('registration', [RegisterController::class, 'showRegistrationPage']);
+Route::post('registration', [RegisterController::class, 'registration']);

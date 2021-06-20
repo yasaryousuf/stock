@@ -12,8 +12,12 @@ class CategoryRepository
         return Category::all();
     }
 
-    public function getWithPagination($limit)  {
-        return Category::paginate($limit);
+    public function getWithPagination($limit, $with = [])  {
+        $query = Category::query();
+        if ($with) {
+            $query->with($with);
+        }
+        return $query->paginate($limit);
     }
 
     public function create($category) {

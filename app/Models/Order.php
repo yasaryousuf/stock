@@ -11,6 +11,7 @@ class Order extends Model
     use HasFactory, SoftDeletes;
 
     protected $guarded = [];
+    public static $name = 'order';
 
     public function products(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {

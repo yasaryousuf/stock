@@ -8,8 +8,16 @@ use App\Models\Customer;
 
 class CustomerRepository
 {
-    public function getWithPagination($limit)  {
-        return Customer::paginate($limit);
+    public function getAll()  {
+        return Customer::all();
+    }
+
+    public function getWithPagination($limit, $with = [])  {
+        $query = Customer::query();
+        if ($with) {
+            $query->with($with);
+        }
+        return $query->paginate($limit);
     }
 
     public function create($customer) {

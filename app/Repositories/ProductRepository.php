@@ -8,8 +8,16 @@ use App\Models\Product;
 
 class ProductRepository
 {
-    public function getWithPagination($limit)  {
-        return Product::paginate($limit);
+    public function getAll()  {
+        return Product::all();
+    }
+
+    public function getWithPagination($limit, $with = [])  {
+        $query = Product::query();
+        if ($with) {
+            $query->with($with);
+        }
+        return $query->paginate($limit);
     }
 
     public function create($product) {

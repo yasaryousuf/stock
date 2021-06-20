@@ -2,39 +2,50 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Customer;
+use App\Helper\PaginationHelper;
+use App\Helper\ResponseMessageHelper;
+use App\Http\Requests\Order\CreateOrderRequest;
 use App\Models\Order;
-use App\Models\Product;
-use App\Models\Supply;
-use Illuminate\Http\Request;
+use App\Repositories\CustomerRepository;
+use App\Repositories\OrderRepository;
+use App\Repositories\ProductRepository;
 use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
+    private $productRepository;
+    private $orderRepository;
+    private $customerRepository;
 
+    public function __construct(OrderRepository $orderRepository, CustomerRepository $customerRepository, ProductRepository $productRepository)
+    {
+        $this->orderRepository = $orderRepository;
+        $this->customerRepository = $customerRepository;
+        $this->productRepository = $productRepository;
+    }
     public function index()
     {
-        return view('admin.order.index', ['orders' => Order::with('products', 'customer')->paginate(25)]);
+        return view('admin.order.index', ['orders' => $this->orderRepository->getWithPagination(PaginationHelper::MEDIUM_PAGINATION, ['products', 'customer'])]);
     }
 
     public function create()
     {
-        return view('admin.order.create', ['customers' => Customer::all(), 'products' => Product::all()]);
+        return view('admin.order.create', ['customers' => $this->customerRepository->getAll(), 'products' => $this->productRepository->getAll()]);
     }
 
-    public function store(Request $request)
+    public function store(CreateOrderRequest $createOrderRequest)
     {
         DB::beginTransaction();
         try {
-            $order = Order::create($request->validate([
-                'date' => 'required',
-                'reference' => 'required|min:2|max:150',
-                'note' => 'nullable|min:2|max:150',
-                'customer_id' => 'nullable',
-            ]));
+            $order = $this->orderRepository->create([
+                'date' => $createOrderRequest->date,
+                'reference' => $createOrderRequest->reference,
+                'note' => $createOrderRequest->note,
+                'customer_id' => $createOrderRequest->customer_id
+            ]);
             $i = 0;
-            foreach ($request->data['product_id'] as $product_id) {
-                $order->products()->attach($product_id, ['quantity' => $request->data['quantity'][$i], 'unit_price' => $request->data['unit_price'][$i]]);
+            foreach ($createOrderRequest->data['product_id'] as $product_id) {
+                $order->products()->attach($product_id, ['quantity' => $createOrderRequest->data['quantity'][$i], 'unit_price' => $createOrderRequest->data['unit_price'][$i]]);
                 $i++;
             }
             DB::commit();
@@ -42,33 +53,16 @@ class OrderController extends Controller
             DB::rollback();
             return back()->withWarning($e->getMessage());
         }
-        return redirect('orders')->withSuccess( 'Order saved!' );
-    }
-
-    public function show(Order $order)
-    {
-        //
-    }
-
-    public function edit(Order $order)
-    {
-        //
-    }
-
-    public function update(Request $request, Order $order)
-    {
-        //
+        return redirect()->route('orders.index')->withSuccess(sprintf(ResponseMessageHelper::$response_message['model_created'], Order::$name));
     }
 
     public function destroy(Order $order)
     {
         try {
-            $order->delete();
+            $this->orderRepository->delete($order);
         } catch (\Exception $e) {
             return back()->withWarning($e->getMessage());
         }
-
-        return redirect('orders')->withSuccess( 'Order deleted!' );
-
+        return redirect()->route('orders.index')->withSuccess(sprintf(ResponseMessageHelper::$response_message['model_deleted'], Order::$name));
     }
 }

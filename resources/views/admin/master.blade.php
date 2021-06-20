@@ -85,8 +85,11 @@
                             </div>
                             <div class="kt-notification">
                                 <div class="kt-notification__custom kt-space-between">
-                                    <a href="/logout" target="_blank"
-                                       class="btn btn-label btn-label-brand btn-sm btn-bold">Sign Out</a>
+                                    <form class="kt-form" method="POST" action="{{ route('logout') }}" novalidate="novalidate" id="kt_login_form">
+                                        @csrf
+                                    <button type="submit"
+                                       class="btn btn-label btn-label-brand btn-sm btn-bold">Sign Out</button>
+                                    </form>
                                 </div>
                             </div>
                         </div>

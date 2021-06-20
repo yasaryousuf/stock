@@ -8,8 +8,16 @@ use App\Models\Supplier;
 
 class SupplierRepository
 {
-    public function getWithPagination($limit)  {
-        return Supplier::paginate($limit);
+    public function getAll()  {
+        return Supplier::all();
+    }
+
+    public function getWithPagination($limit, $with = [])  {
+        $query = Supplier::query();
+        if ($with) {
+            $query->with($with);
+        }
+        return $query->paginate($limit);
     }
 
     public function create($supplier) {
