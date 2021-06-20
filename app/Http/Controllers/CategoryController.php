@@ -2,74 +2,64 @@
 
 namespace App\Http\Controllers;
 
+use App\Helper\PaginationHelper;
+use App\Helper\ResponseMessageHelper;
+use App\Http\Requests\Category\CreateCategoryRequest;
+use App\Http\Requests\Category\UpdateCategoryRequest;
 use App\Models\Category;
-use Illuminate\Http\Request;
+use App\Repositories\CategoryRepository;
 
 class CategoryController extends Controller
 {
+    private $categoryRepository;
+
+    public function __construct(CategoryRepository $categoryRepository)
+    {
+        $this->categoryRepository = $categoryRepository;
+    }
+
     public function index()
     {
-        return view('admin.category.index', ['categories' => Category::paginate(25)]);
+        return view('admin.category.index', ['categories' => $this->categoryRepository->getWithPagination(PaginationHelper::MEDIUM_PAGINATION)]);
     }
 
     public function create()
     {
-        return view('admin.category.create', ['categories' => Category::all()]);
+        return view('admin.category.create', ['categories' => $this->categoryRepository->getAll()]);
     }
 
-    public function store(Request $request)
+    public function store(CreateCategoryRequest $createCategoryRequest)
     {
         try {
-            Category::create($request->validate([
-                'name' => 'required|string|min:2|max:150',
-                'slug' => 'nullable|string|min:2|max:150',
-                'details' => 'nullable|string|min:2|max:150',
-                'unit' => 'nullable|string|min:2|max:150',
-                'parent_id' => 'nullable',
-            ]));
+            $this->categoryRepository->create($createCategoryRequest->validated());
         } catch (\Exception $e) {
             return back()->withWarning($e->getMessage());
         }
-
-        return redirect('categories')->withSuccess( 'Category saved!' );
-    }
-
-    public function show(Category $category)
-    {
-        //
+        return redirect()->route('categories.index')->withSuccess(sprintf(ResponseMessageHelper::$response_message['model_created'], Category::$name));
     }
 
     public function edit(Category $category)
     {
-        return view('admin.category.update', ['category' => $category, 'categories' => Category::all()]);
+        return view('admin.category.update', ['category' => $category, 'categories' => $this->categoryRepository->getAll()]);
     }
 
-    public function update(Request $request, Category $category)
+    public function update(UpdateCategoryRequest $updateCategoryRequest, Category $category)
     {
         try {
-            Category::where('id', $category->id)->update($request->validate([
-                'name' => 'required|string|min:2|max:150',
-                'slug' => 'nullable|string|min:2|max:150',
-                'details' => 'nullable|string|min:2|max:150',
-                'unit' => 'nullable|string|min:2|max:150',
-                'parent_id' => 'nullable',
-            ]));
+            $this->categoryRepository->update($category->id, $updateCategoryRequest->validated());
         } catch (\Exception $e) {
             return back()->withWarning($e->getMessage());
         }
-
-        return redirect('categories')->withSuccess( 'Category updated!' );
+        return redirect()->route('categories.index')->withSuccess(sprintf(ResponseMessageHelper::$response_message['model_updated'], Category::$name));
     }
 
     public function destroy(Category $category)
     {
         try {
-            $category->delete();
+            $this->categoryRepository->delete($category);
         } catch (\Exception $e) {
             return back()->withWarning($e->getMessage());
         }
-
-        return redirect('categories')->withSuccess( 'Category deleted!' );
-
+        return redirect()->route('categories.index')->withSuccess(sprintf(ResponseMessageHelper::$response_message['model_deleted'], Category::$name));
     }
 }

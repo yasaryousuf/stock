@@ -1,6 +1,6 @@
 @if( Session::has( 'success' ))
     <div class="alert alert-success" role="alert">
-        <div class="alert-text">{{ Session::get( 'success' ) }}!</div>
+        <div class="alert-text">{{ Session::get( 'success' ) }}</div>
     </div>
 {{--<script>--}}
 {{--    toastr.success("{{ Session::get( 'success' ) }}");--}}
@@ -11,6 +11,6 @@
 {{--        toastr.error("{{ Session::get( 'warning' ) }}");--}}
 {{--    </script>--}}
     <div class="alert alert-warning" role="alert">
-        <div class="alert-text">{{ Session::get( 'warning' ) }}!</div>
+        <div class="alert-text">{{ Session::get( 'warning' ) }}</div>
     </div>
 @endif

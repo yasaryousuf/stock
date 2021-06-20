@@ -2,15 +2,25 @@
 
 namespace App\Http\Controllers;
 
+use App\Helper\PaginationHelper;
+use App\Helper\ResponseMessageHelper;
+use App\Http\Requests\Customer\CreateCustomerRequest;
+use App\Http\Requests\Customer\UpdateCustomerRequest;
 use App\Models\Customer;
-use Illuminate\Http\Request;
+use App\Repositories\CustomerRepository;
 
 class CustomerController extends Controller
 {
+    private $customerRepository;
+
+    public function __construct(CustomerRepository $customerRepository)
+    {
+        $this->customerRepository = $customerRepository;
+    }
 
     public function index()
     {
-        return view('admin.customer.index', ['customers' => Customer::paginate(25)]);
+        return view('admin.customer.index', ['customers' => $this->customerRepository->getWithPagination(PaginationHelper::MEDIUM_PAGINATION)]);
     }
 
     public function create()
@@ -18,29 +28,14 @@ class CustomerController extends Controller
         return view('admin.customer.create');
     }
 
-    public function store(Request $request)
+    public function store(CreateCustomerRequest $createCustomerRequest)
     {
         try {
-            Customer::create($request->validate([
-                'name' => 'required|string|min:2|max:150',
-                'email' => 'nullable|email|min:2|max:150',
-                'phone' => 'nullable|min:2|max:150',
-                'address' => 'nullable|min:2|max:150',
-                'dob' => 'nullable|date',
-                'sex' => 'nullable',
-                'is_active' => 'nullable',
-            ]));
+            $this->customerRepository->create($createCustomerRequest->validated());
         } catch (\Exception $e) {
             return back()->withWarning($e->getMessage());
         }
-
-        return redirect('customers')->withSuccess( 'Customer saved!' );
-
-    }
-
-    public function show(Customer $customer)
-    {
-        //
+        return redirect()->route('customers.index')->withSuccess(sprintf(ResponseMessageHelper::$response_message['model_created'], Customer::$name));
     }
 
     public function edit(Customer $customer)
@@ -48,34 +43,23 @@ class CustomerController extends Controller
         return view('admin.customer.update', ['customer' => $customer]);
     }
 
-    public function update(Request $request, Customer $customer)
+    public function update(UpdateCustomerRequest $updateCustomerRequest, Customer $customer)
     {
         try {
-            Customer::where('id', $customer->id)->update($request->validate([
-                'name' => 'required|string|min:2|max:150',
-                'email' => 'nullable|email|min:2|max:150',
-                'phone' => 'nullable|min:2|max:150',
-                'address' => 'nullable|min:2|max:150',
-                'dob' => 'nullable|date',
-                'sex' => 'nullable',
-                'is_active' => 'nullable',
-            ]));
+            $this->customerRepository->update($customer->id, $updateCustomerRequest->validated());
         } catch (\Exception $e) {
             return back()->withWarning($e->getMessage());
         }
-
-        return redirect('customers')->withSuccess( 'Customer updated!' );
+        return redirect()->route('customers.index')->withSuccess(sprintf(ResponseMessageHelper::$response_message['model_updated'], Customer::$name));
     }
 
     public function destroy(Customer $customer)
     {
         try {
-            $customer->delete();
+            $this->customerRepository->delete($customer);
         } catch (\Exception $e) {
             return back()->withWarning($e->getMessage());
         }
-
-        return redirect('customers')->withSuccess( 'Customer deleted!' );
-
+        return redirect()->route('customers.index')->withSuccess(sprintf(ResponseMessageHelper::$response_message['model_deleted'], Customer::$name));
     }
 }

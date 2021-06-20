@@ -2,15 +2,26 @@
 
 namespace App\Http\Controllers;
 
+use App\Helper\PaginationHelper;
+use App\Helper\ResponseMessageHelper;
+use App\Http\Requests\Supplier\CreateSupplierRequest;
+use App\Http\Requests\Supplier\UpdateSupplierRequest;
 use App\Models\Supplier;
-use Illuminate\Http\Request;
+use App\Repositories\SupplierRepository;
 
 class SupplierController extends Controller
 {
 
+    private $supplierRepository;
+
+    public function __construct(SupplierRepository $supplierRepository)
+    {
+        $this->supplierRepository = $supplierRepository;
+    }
+
     public function index()
     {
-        return view('admin.supplier.index', ['suppliers' => Supplier::paginate(25)]);
+        return view('admin.supplier.index', ['suppliers' => $this->supplierRepository->getWithPagination(PaginationHelper::MEDIUM_PAGINATION)]);
     }
 
     public function create()
@@ -18,30 +29,14 @@ class SupplierController extends Controller
         return view('admin.supplier.create');
     }
 
-    public function store(Request $request)
+    public function store(CreateSupplierRequest $createSupplierRequest)
     {
         try {
-            Supplier::create($request->validate([
-                'name' => 'required|string|min:2|max:150',
-                'email' => 'nullable|email|min:2|max:150',
-                'phone' => 'nullable|min:2|max:150',
-                'code' => 'nullable|min:2|max:150',
-                'address' => 'nullable|min:2|max:150',
-                'dob' => 'nullable|date',
-                'sex' => 'nullable',
-                'is_active' => 'nullable',
-            ]));
+            $this->supplierRepository->create($createSupplierRequest->validated());
         } catch (\Exception $e) {
             return back()->withWarning($e->getMessage());
         }
-
-        return redirect('suppliers')->withSuccess( 'Supplier saved!' );
-
-    }
-
-    public function show(Supplier $supplier)
-    {
-        //
+        return redirect()->route('suppliers.index')->withSuccess(sprintf(ResponseMessageHelper::$response_message['model_created'], Supplier::$name));
     }
 
     public function edit(Supplier $supplier)
@@ -49,35 +44,23 @@ class SupplierController extends Controller
         return view('admin.supplier.update', ['supplier' => $supplier]);
     }
 
-    public function update(Request $request, Supplier $supplier)
+    public function update(UpdateSupplierRequest $updateSupplierRequest, Supplier $supplier)
     {
         try {
-            Supplier::where('id', $supplier->id)->update($request->validate([
-                'name' => 'required|string|min:2|max:150',
-                'email' => 'nullable|email|min:2|max:150',
-                'phone' => 'nullable|min:2|max:150',
-                'code' => 'nullable|min:2|max:150',
-                'address' => 'nullable|min:2|max:150',
-                'dob' => 'nullable|date',
-                'sex' => 'nullable',
-                'is_active' => 'nullable',
-            ]));
+            $this->supplierRepository->update($supplier->id, $updateSupplierRequest->validated());
         } catch (\Exception $e) {
             return back()->withWarning($e->getMessage());
         }
-
-        return redirect('suppliers')->withSuccess( 'Supplier updated!' );
+        return redirect()->route('suppliers.index')->withSuccess(sprintf(ResponseMessageHelper::$response_message['model_updated'], Supplier::$name));
     }
 
     public function destroy(Supplier $supplier)
     {
         try {
-            $supplier->delete();
+            $this->supplierRepository->delete($supplier);
         } catch (\Exception $e) {
             return back()->withWarning($e->getMessage());
         }
-
-        return redirect('suppliers')->withSuccess( 'Supplier deleted!' );
-
+        return redirect()->route('suppliers.index')->withSuccess(sprintf(ResponseMessageHelper::$response_message['model_deleted'], Supplier::$name));
     }
 }

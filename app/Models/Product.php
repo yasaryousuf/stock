@@ -11,6 +11,7 @@ class Product extends Model
     use HasFactory, SoftDeletes;
 
     protected $guarded = [];
+    public static $name = 'product';
 
     public function supplies(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {

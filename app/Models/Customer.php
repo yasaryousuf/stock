@@ -11,4 +11,5 @@ class Customer extends Model
     use HasFactory, SoftDeletes;
 
     protected $guarded = [];
+    public static $name = 'customer';
 }

@@ -11,4 +11,6 @@ class Supplier extends Model
     use HasFactory, SoftDeletes;
 
     protected $guarded = [];
+    public static $name = 'supplier';
+
 }
