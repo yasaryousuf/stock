@@ -1,19 +1,15 @@
 <?php
 
 use App\Http\Controllers\CustomAuth\RegisterController;
-use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CustomAuth\LoginController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
-use App\Http\Controllers\SupplyController;
-use Illuminate\Support\Facades\Route;
-
-
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\SupplierController;
-use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ProductController;
-use App\Http\Controllers\StockController;
+use App\Http\Controllers\SupplyController;
+use App\Http\Controllers\SupplierController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
